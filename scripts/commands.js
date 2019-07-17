@@ -55,10 +55,15 @@ yargs.command({
       describe:'Available: room_0 to room_23 inclusive',
       demandOption: true,
       type: 'string'
+    },
+    key: {
+      describe:'An item to enter the locked/blocked room',
+      demandOption: false,
+      type: 'string'
     }
   },
   handler: function (argv) {
-    runner.goto(argv.room);
+    runner.goto(argv.room, argv.key);
   }
 });
 
