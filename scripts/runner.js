@@ -33,7 +33,7 @@ const goto = (room, key) => {
     }
     attemptUnlock(blocker, key, runner, room);
   } else {
-    return console.log(chalk.red(`Cannot go to room ${room}.`))
+    return console.log(chalk.red(`Cannot go to ${room}.`))
   }
 };
 
@@ -96,7 +96,7 @@ const quite = () => {
 //helper functions
 const attemptUnlock = (blocker, key, runner, room) => {
   if(blocker && !key){
-    console.log(chalk.red(`Cannot go to room ${room}. Exit is blocked with ${blocker}! Lookup
+    console.log(chalk.red(`Cannot go to ${room}. Exit is blocked with ${blocker}! Lookup
       your backpack to see if you have a solution.`));
   } else if(key === blocker){
     let match = runner.backpack.items.find((item)=>item.type===key),
@@ -129,7 +129,7 @@ const moveAlong = (runner, room) => {
   reduceHealth(runner, room);
   runner.current_room = room;
   save(runner, 'runner');
-  console.log(chalk.green(`Going to room ${room} now...`));
+  console.log(chalk.green(`Going to ${room} now...`));
   console.log(location());
   winner(room);
 };
@@ -137,7 +137,7 @@ const moveAlong = (runner, room) => {
 const reduceHealth = (runner, room)=> {
   let diff = room.split('_')[1]-runner.current_room.split('_')[1];
 
-  if (diff>0 && diff <=3 || diff === -1) {
+  if (diff>=0 && diff <=3 || diff === -1) {
     runner.health -=10;
   } else if(diff>4 && diff<8) {
     runner.health-=20;
