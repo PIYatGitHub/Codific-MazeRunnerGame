@@ -1,7 +1,1 @@
-{
-  "name": "Bql Hacker",
-  "backpack": {
-    "max_weight":100,
-    "items":[]
-  }
-}
+{"name":"Bql Hacker","backpack":{"max_weight":50,"curr_weight":0,"items":[]},"current_room":"room_7"}

@@ -2,47 +2,47 @@ const fs = require('fs');
 const chalk = require('chalk');
 
 const location = () => {
-  let maze = load("maze");
-  console.log('DEBUG....');
-  console.log(maze[0]);
-  console.log('DEBUG....');
+  let maze = load('maze'),
+      runner = load('runner'),
+      item = getItemInRoom(maze, runner); //# kind-of-ugly...
 
-
-  let item = {weight: 5, type:"med_kit"};
-  console.log(chalk.yellow('Printing your location >>> room_24 \r\n' +
-    'What is in room_24? \r\n' +
+  console.log(chalk.yellow(`Currently you are in room: ${runner.current_room} \r\n` +
+    'Available item: \r\n' +
     `${JSON.stringify(item)}`));
 };
 
 const items = () => {
-  //TODO load from json...
-  let backpack = [
-    {weight: 3, type:"banana"},
-    {weight: 20, type:"bomb"}
-    ];
-  //TODO load from json...
-  console.log(chalk.green(`What is in my backpack? \r\n ${JSON.stringify(backpack)}`));
+ let {backpack} = load('runner');
+  console.log(chalk.green(`What is in my backpack? \r\n ${JSON.stringify(backpack.items)}`));
 };
 
 const pickup = (itemType) => {
-  let item = {weight: 1, type:itemType};
-  //TODO -- push that new item to the json...
-  let backpack = [
-    {weight: 3, type:"banana"},
-    {weight: 20, type:"bomb"},
-    item
-  ];
-  console.log(chalk.green(`What is in my backpack (after pickup)? \r\n ${JSON.stringify(backpack)}`));
+  let maze = load('maze'),
+      runner = load('runner'),
+      item = getItemInRoom(maze, runner);
+
+  if (itemType === item.type) {
+    if (runner.backpack.curr_weight + item.weight <= runner.backpack.max_weight) {
+      runner.backpack.items.push(item);
+      runner.backpack.curr_weight += item.weight;
+      save(runner, 'runner');
+    } else  return console.log(chalk.red(`Backpack overload by ${runner.backpack.curr_weight + item.weight - runner.backpack.max_weight} kg.`));
+  } else return console.log(chalk.red(`No such item in the room...`));
+
+  console.log(chalk.green(`What is in my backpack (after pickup)? \r\n ${JSON.stringify(runner.backpack.items)}`));
 };
 
 const drop = (itemType) => {
+  let runner = load('runner'),
+  removable = runner.backpack.items.find((e)=>e.type === itemType),
+  index = runner.backpack.items.indexOf(removable);
 
-  //TODO push that update to the json...
-  let backpack = [
-    {weight: 3, type:"banana"}
-  ];
-  //TODO load from json...
-  console.log(chalk.green(`What is in my backpack (after drop)? \r\n ${JSON.stringify(backpack)}`));
+  if (index >-1) {
+    runner.backpack.items.splice(index,1);
+    runner.backpack.curr_weight -= removable.weight;
+    save(runner, 'runner');
+  } else return console.log(chalk.red(`No such item in the backpack...`));
+  console.log(chalk.green(`What is in my backpack (after drop)? \r\n ${JSON.stringify(runner.backpack)}`));
 };
 
 
@@ -71,4 +71,7 @@ const save = (document, filename) => {
   fs.writeFileSync(`JSON/${filename}.json`, entry);
 };
 
+const getItemInRoom = (maze, runner) =>{
+  return maze.filter((item)=>item.name===runner.current_room)[0].item
+};
 module.exports = {location, goto, items, pickup, drop, quite};
