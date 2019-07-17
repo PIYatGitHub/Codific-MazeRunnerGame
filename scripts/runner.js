@@ -92,7 +92,7 @@ const pickup = (itemType) => {
 const quite = () => {
   resetRunner();
   console.log(chalk.cyan('Shutting down... Have a nice day and come back tomorrow!'));
-  process.exit(1); 
+  process.exit(1);
 };
 
 //helper functions
@@ -164,6 +164,7 @@ const save = (document, filename) => {
 
 const winner = (room) => {
   if (room === "room_17"){
+    resetRunner();
     return console.log(chalk.green('Hurra! You won the maze run... What a game it was, huh?'))
   }
 };

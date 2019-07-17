@@ -1,1 +1,1 @@
-{"name":"Bql Hacker","health":80,"backpack":{"max_weight":50,"curr_weight":10,"items":[{"weight":5,"type":"med_kit"},{"weight":5,"type":"med_kit"}]},"current_room":"room_8"}
+{"name":"Bql Hacker","health":100,"backpack":{"max_weight":50,"curr_weight":0,"items":[]},"current_room":"room_0"}
