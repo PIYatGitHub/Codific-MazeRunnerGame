@@ -2,31 +2,34 @@ const fs = require('fs');
 const chalk = require('chalk');
 
 const location = () => {
-  console.log(chalk.yellow('Printing your location >>> room_92'));
+  let item = {weight: 5, type:"med_kit"};
+  console.log(chalk.yellow('Printing your location >>> room_92 \r\n' +
+    'What is in room_92? \r\n' +
+    `${JSON.stringify(item)}`));
 };
 
 const items = () => {
   //TODO load from json...
   let backpack = [
     {weight: 3, type:"banana"},
-    {weight: 13, type:"bomb"}
+    {weight: 20, type:"bomb"}
     ];
   //TODO load from json...
   console.log(chalk.green(`What is in my backpack? \r\n ${JSON.stringify(backpack)}`));
 };
 
-const pickup = () => {
-  let item = {weight: 1, type:"key_red"};
+const pickup = (itemType) => {
+  let item = {weight: 1, type:itemType};
   //TODO -- push that new item to the json...
   let backpack = [
     {weight: 3, type:"banana"},
-    {weight: 13, type:"bomb"},
+    {weight: 20, type:"bomb"},
     item
   ];
   console.log(chalk.green(`What is in my backpack (after pickup)? \r\n ${JSON.stringify(backpack)}`));
 };
 
-const drop = () => {
+const drop = (itemType) => {
 
   //TODO push that update to the json...
   let backpack = [
@@ -46,15 +49,20 @@ const quite = () => {
   console.log(chalk.cyan('Shutting down... Have a nice day and come back tomorrow!'));
 };
 
-const load = (target) => {
-  //possible values of target: maze, runner
+const load = (filename) => {
+  //possible values of filename: maze, runner
   try{
-    const dataBuff = fs.readFileSync(`JSON/${target}.json`),
+    const dataBuff = fs.readFileSync(`JSON/${filename}.json`),
       dataJSON = dataBuff.toString();
     return JSON.parse(dataJSON);
   } catch (e) {
     return [];
   }
+};
+
+const save = (document, filename) => {
+  const entry = JSON.stringify(document);
+  fs.writeFileSync(`JSON/${filename}.json`, entry);
 };
 
 module.exports = {location, goto, items, pickup, drop, quite};
