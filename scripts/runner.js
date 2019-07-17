@@ -2,9 +2,15 @@ const fs = require('fs');
 const chalk = require('chalk');
 
 const location = () => {
+  let maze = load("maze");
+  console.log('DEBUG....');
+  console.log(maze[0]);
+  console.log('DEBUG....');
+
+
   let item = {weight: 5, type:"med_kit"};
-  console.log(chalk.yellow('Printing your location >>> room_92 \r\n' +
-    'What is in room_92? \r\n' +
+  console.log(chalk.yellow('Printing your location >>> room_24 \r\n' +
+    'What is in room_24? \r\n' +
     `${JSON.stringify(item)}`));
 };
 

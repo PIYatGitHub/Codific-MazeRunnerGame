@@ -52,7 +52,7 @@ yargs.command({
   describe: 'player will move to the exit that connects the current and selected rooms and will execute the location command',
   builder:{
     room: {
-      describe:'Available: room_0 to room_99 inclusive',
+      describe:'Available: room_0 to room_23 inclusive',
       demandOption: true,
       type: 'string'
     }
