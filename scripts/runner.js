@@ -79,7 +79,7 @@ const pickup = (itemType) => {
       runner.backpack.curr_weight += item.weight;
       save(runner, 'runner');
     } else  {
-      return console.log(chalk.red(`Backpack overload by ${runner.backpack.curr_weight + item.weight - runner.backpack.max_weight} kg.`))
+      return console.log(chalk.red(`Backpack overload by ${runner.backpack.curr_weight + item.weight - runner.backpack.max_weight} kg. Cannot pick up.`))
     }
   } else {
     return console.log(chalk.red(`No such item in the room...`))
@@ -94,7 +94,6 @@ const quite = () => {
 };
 
 //helper functions
-
 const attemptUnlock = (blocker, key, runner, room) => {
   if(blocker && !key){
     console.log(chalk.red(`Cannot go to room ${room}. Exit is blocked with ${blocker}! Lookup
@@ -114,12 +113,9 @@ const attemptUnlock = (blocker, key, runner, room) => {
   }
 };
 
-const getItemInRoom = (maze, runner) =>{
-  return maze.filter((item)=>item.name===runner.current_room)[0].item
-};
+const getItemInRoom = (maze, runner) => maze.filter((item)=>item.name===runner.current_room)[0].item;
 
 const load = (filename) => {
-  //possible values of filename: maze, runner
   try{
     const dataBuff = fs.readFileSync(`JSON/${filename}.json`),
       dataJSON = dataBuff.toString();
@@ -140,7 +136,7 @@ const moveAlong = (runner, room) => {
 
 const reduceHealth = (runner, room)=> {
   let diff = room.split('_')[1]-runner.current_room.split('_')[1];
-  
+
   if (diff>0 && diff <=3 || diff === -1) {
     runner.health -=10;
   } else if(diff>4 && diff<8) {
