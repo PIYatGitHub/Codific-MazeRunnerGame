@@ -90,7 +90,9 @@ const pickup = (itemType) => {
 
 
 const quite = () => {
+  resetRunner();
   console.log(chalk.cyan('Shutting down... Have a nice day and come back tomorrow!'));
+  process.exit(1); 
 };
 
 //helper functions
@@ -144,6 +146,15 @@ const reduceHealth = (runner, room)=> {
   } else {
     return console.log(chalk.red(`No clipping in space allowed...`))
   }
+};
+
+const resetRunner = ()=>{
+  let runner = load('runner');
+  runner.health = 100;
+  runner.backpack.curr_weight = 0;
+  runner.backpack.items = [];
+  runner.current_room = "room_0";
+  save(runner, 'runner');
 };
 
 const save = (document, filename) => {
