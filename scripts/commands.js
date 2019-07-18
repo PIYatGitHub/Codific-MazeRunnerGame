@@ -61,6 +61,14 @@ yargs.command({
 });
 
 yargs.command({
+  command: 'me',
+  describe: 'prints out your current status with room, backpack weight and health',
+  handler: function () {
+    runner.me();
+  }
+});
+
+yargs.command({
   command: 'pickup',
   describe: 'you will pickup the item and execute the items command',
   builder:{

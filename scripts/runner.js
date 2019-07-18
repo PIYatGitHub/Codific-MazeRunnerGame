@@ -1,172 +1,150 @@
-const fs = require('fs');
-const chalk = require('chalk');
+const chalk = require(`chalk`);
+const Maze = require(`./maze`);
 
-const drop = (itemType) => {
-  let runner = load('runner'),
-    removable = runner.backpack.items.find((e)=>e.type === itemType),
-    index = runner.backpack.items.indexOf(removable);
-
-  if (index >-1) {
-    runner.backpack.items.splice(index,1);
-    runner.backpack.curr_weight -= removable.weight;
-    save(runner, 'runner');
-  } else {
-    return console.log(chalk.red(`No such item in the backpack...`))
+class Runner {
+  constructor() {
+      if(! Runner.instance){
+        this.health = 100;
+        this.backpack = {
+          max_weight : 50,
+          current_weight: 0,
+          items:[]
+        };
+        this.current_room = `room_0`;
+        this.maze = new Maze();
+        Runner.instance = this;
+      }
+      return Runner.instance;
   }
-  console.log(chalk.green(`What is in my backpack (after drop)? \r\n ${JSON.stringify(runner.backpack)}`));
-};
 
-const goto = (room, key) => {
-  let maze = load('maze'),
-    runner = load('runner'),
-    curr_room = maze.find((e)=>e.name === runner.current_room),
-    exit_match = curr_room.exits.includes(room),
-    blocked_exit = curr_room.blocked_exits.find((b)=>b.includes(`${room}--`)),
-    blocker;
-
-  if (blocked_exit) {
-    blocker = blocked_exit.split('--')[1];
-  }
-  if (exit_match) {
-    if (!blocker) {
-      moveAlong(runner, room)
+  attemptUnlock (key, blocker, room) {
+    if(key === blocker){
+      let match = this.backpack.items.find((item)=>item.type===key),
+        index = this.backpack.items.indexOf(match);
+      if (match) {
+        this.backpack.items.splice(index,1);
+        this.backpack.curr_weight -= match.weight;
+        this.current_room = room;
+        this.moveAlong(room);
+        return true;
+      }
+    }else {
+      return false;
     }
-    attemptUnlock(blocker, key, runner, room);
-  } else {
-    return console.log(chalk.red(`Cannot go to ${room}.`))
   }
-};
 
-const heal = () => {
-  let runner = load('runner'),
-    med_kit = runner.backpack.items.find((i) => i.type === 'med_kit'),
-    index = runner.backpack.items.indexOf(med_kit);
-
-  if (index > -1) {
-    runner.backpack.items.splice(index, 1);
-    runner.backpack.curr_weight -= med_kit.weight;
-    runner.health +=10;
-    console.log(chalk.green.underline('Using med_kit... health up by 10 pts.'));
-    save(runner, 'runner');
-  } else {
-    console.log(chalk.red('Could not find med_kit...'));
-  }
-};
-
-const items = () => {
-  let {backpack} = load('runner');
-  console.log(chalk.green(`What is in my backpack? \r\n ${JSON.stringify(backpack.items)}`));
-};
-
-const location = () => {
-  let maze = load('maze'),
-      runner = load('runner'),
-      item = getItemInRoom(maze, runner);
-
-  console.log(chalk.yellow(`Currently you are in room: ${runner.current_room} \r\n` +
-    'Available item: \r\n' +
-    `${JSON.stringify(item)}`));
-};
-
-const pickup = (itemType) => {
-  let maze = load('maze'),
-      runner = load('runner'),
-      item = getItemInRoom(maze, runner);
-
-  if (itemType === item.type) {
-    if (runner.backpack.curr_weight + item.weight <= runner.backpack.max_weight) {
-      runner.backpack.items.push(item);
-      runner.backpack.curr_weight += item.weight;
-      save(runner, 'runner');
-    } else  {
-      return console.log(chalk.red(`Backpack overload by ${runner.backpack.curr_weight + item.weight - runner.backpack.max_weight} kg. Cannot pick up.`))
+  drop (itemType) {
+    let removable = this.backpack.items.find((e)=>e.type === itemType),
+        index = this.backpack.items.indexOf(removable);
+    if (index >-1) {
+      this.backpack.items.splice(index,1);
+      this.backpack.current_weight -= removable.weight;
+    } else {
+      return console.log(chalk.red(`No such item in the backpack...`))
     }
-  } else {
-    return console.log(chalk.red(`No such item in the room...`))
-  }
+    console.log(chalk.green(`What is in my backpack (after drop)?\r\n${JSON.stringify(this.backpack)}`));
+  };
 
-  console.log(chalk.green(`What is in my backpack (after pickup)? \r\n ${JSON.stringify(runner.backpack.items)}`));
-};
+  goto  (room, key) {
+    let curr_room = this.maze.getCurrentRoom(this.current_room),
+      exit_match = curr_room.exits.includes(room),
+      blocked_exit = curr_room.blocked_exits.find((b)=>b.includes(`${room}--`)),
+      blocker = blocked_exit?blocked_exit.split(`--`)[1]:``;
 
+    if (!exit_match) {
+      return console.log(chalk.red(`Cannot go to ${room}.`))
+    }
 
-const quite = () => {
-  resetRunner();
-  console.log(chalk.cyan('Shutting down... Have a nice day and come back tomorrow!'));
-  process.exit(1);
-};
-
-//helper functions
-const attemptUnlock = (blocker, key, runner, room) => {
-  if(blocker && !key){
-    console.log(chalk.red(`Cannot go to ${room}. Exit is blocked with ${blocker}! Lookup
+    if (blocked_exit && !key) {
+      console.log(chalk.red(`Cannot go to ${room}. Exit is blocked with ${blocker}! Lookup
       your backpack to see if you have a solution.`));
-  } else if(key === blocker){
-    let match = runner.backpack.items.find((item)=>item.type===key),
-      index = runner.backpack.items.indexOf(match);
-    if (match) {
-      runner.backpack.items.splice(index,1);
-      runner.backpack.curr_weight -= match.weight;
-      runner.current_room = room;
-      reduceHealth(runner, room);
-      moveAlong(runner, room);
+    }else if(key) {
+      if (blocker) {
+        let unlocked = this.attemptUnlock(key, blocker, room);
+        if (unlocked) {
+          console.log(chalk.green(`Door unlocked successfully...`));
+          this.maze.unlockDoor();
+        } else {
+          console.log(chalk.red(`No such item in the backpack...`))
+        }
+      }
+    }else {
+      this.moveAlong(room)
     }
-  }else {
-    return console.log(chalk.red(`No such item in the backpack...`))
-  }
-};
+  };
 
-const getItemInRoom = (maze, runner) => maze.filter((item)=>item.name===runner.current_room)[0].item;
+  heal () {
+    let med_kit = this.backpack.items.find((i) => i.type === `med_kit`),
+        index = this.backpack.items.indexOf(med_kit);
+    if (index > -1) {
+      this.backpack.items.splice(index, 1);
+      this.backpack.current_weight -= med_kit.weight;
+      this.health +=10;
+      console.log(chalk.green.underline(`Using med_kit... health up by 10 pts.`));
+    } else {
+      console.log(chalk.red(`Could not find med_kit...`));
+    }
+  };
 
-const load = (filename) => {
-  try{
-    const dataBuff = fs.readFileSync(`JSON/${filename}.json`),
-      dataJSON = dataBuff.toString();
-    return JSON.parse(dataJSON);
-  } catch (e) {
-    return [];
-  }
-};
+  items () {
+    console.log(chalk.green(`What is in my backpack?\r\n${JSON.stringify(this.backpack.items)}`));
+  };
 
-const moveAlong = (runner, room) => {
-  reduceHealth(runner, room);
-  runner.current_room = room;
-  save(runner, 'runner');
-  console.log(chalk.green(`Going to ${room} now...`));
-  console.log(location());
-  winner(room);
-};
+  location () {
+    let item = this.maze.getItemInRoom(this.current_room);
+    console.log(chalk.yellow(`Currently you are in: ${this.current_room}\r\nAvailable item: ${JSON.stringify(item)}`));
+  };
 
-const reduceHealth = (runner, room)=> {
-  let diff = room.split('_')[1]-runner.current_room.split('_')[1];
+  me () {
+    console.log(chalk.cyan(`location: ${this.current_room}, backpack weight: ${this.backpack.current_weight}, heath: ${this.health}`));
+  };
 
-  if (diff>=0 && diff <=3 || diff === -1) {
-    runner.health -=10;
-  } else if(diff>4 && diff<8) {
-    runner.health-=20;
-  } else {
-    return console.log(chalk.red(`No clipping in space allowed...`))
-  }
-};
+  pickup (itemType) {
+    let item = this.maze.getItemInRoom(this.current_room);
+    if (itemType === item.type) {
+      if (this.backpack.current_weight + item.weight <= this.backpack.max_weight) {
+        this.backpack.items.push(item);
+        this.backpack.current_weight += item.weight;
+      } else  {
+        return console.log(chalk.red(`Backpack overload by ${this.backpack.current_weight + item.weight - this.backpack.max_weight} kg. Cannot pick up.`))
+      }
+    } else {
+      return console.log(chalk.red(`No such item in the room...`))
+    }
+    console.log(chalk.green(`What is in my backpack (after pickup)?\r\n${JSON.stringify(this.backpack.items)}`));
+  };
 
-const resetRunner = ()=>{
-  let runner = load('runner');
-  runner.health = 100;
-  runner.backpack.curr_weight = 0;
-  runner.backpack.items = [];
-  runner.current_room = "room_0";
-  save(runner, 'runner');
-};
+  quite () {
+    this.resetRunner();
+    console.log(chalk.cyan(`Shutting down... Have a nice day and come back tomorrow!`));
+    process.exit(1);
+  };
 
-const save = (document, filename) => {
-  const entry = JSON.stringify(document);
-  fs.writeFileSync(`JSON/${filename}.json`, entry);
-};
+  moveAlong (room) {
+    this.reduceHealth(room);
+    this.current_room = room;
+    console.log(chalk.green(`Going to ${room} now...`));
+    console.log(this.location());
+    this.winner(room);
+  };
 
-const winner = (room) => {
-  if (room === "room_17"){
-    resetRunner();
-    return console.log(chalk.green('Hurra! You won the maze run... What a game it was, huh?'))
-  }
-};
+   reduceHealth  (room) {
+    let diff = room.split('_')[1]-this.current_room.split('_')[1];
+    if (diff>=0 && diff <=3 || diff === -1) {
+      this.health -=10;
+    } else if(diff>4 && diff<8) {
+      this.health-=20;
+    } else {
+      return console.log(chalk.red(`No clipping in space allowed...`))
+    }
+  };
 
-module.exports = {drop, goto, heal, items, location, pickup, quite};
+  winner (room)  {
+    if (room === `room_17`){
+      console.log(chalk.green(`Hura and huza! You won the maze run... What a game it was, huh?`));
+      process.exit(1);
+    }
+  };
+}
+const instance = new Runner();
+module.exports = instance;
