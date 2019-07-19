@@ -25,7 +25,7 @@ items     --> shows all the items in your backpack
 heal      --> lets you heal your character if you have a med_kit item available
 quite     --> ends the game
 
-goto --room="<name>" --key="<key>"  --> lets you go to the desired room and potentially unlock it if it is locked
+goto --room="<name>" --key="<key>"  --> go to room, key parameter is optional and serves for unlocking only
 pickup --item="<item>"              --> lets you pickup an item and place it in the backpack
 drop   --item="<item>"              --> lets you drop an item from the backpack
 ```
