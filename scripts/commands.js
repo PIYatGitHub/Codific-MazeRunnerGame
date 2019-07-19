@@ -4,9 +4,9 @@ const runner = require('./runner');
 yargs.command({
   command: 'drop',
   describe: 'you will drop the item and execute the items command',
-  builder:{
+  builder: {
     item: {
-      describe:'enum of items: [sword, bomb, banana, key_blue, key_red, key_green, med_kit]',
+      describe: 'enum of items: [sword, bomb, banana, key_blue, key_red, key_green, med_kit]',
       demandOption: true,
       type: 'string'
     }
@@ -19,14 +19,14 @@ yargs.command({
 yargs.command({
   command: 'goto',
   describe: 'player will move to the exit that connects the current and selected rooms and will execute the location command',
-  builder:{
+  builder: {
     room: {
-      describe:'available: room_0 to room_23 inclusive',
+      describe: 'available: room_0 to room_23 inclusive',
       demandOption: true,
       type: 'string'
     },
     key: {
-      describe:'an item needed to enter the locked/blocked room',
+      describe: 'an item needed to enter the locked/blocked room',
       demandOption: false,
       type: 'string'
     }
@@ -71,9 +71,9 @@ yargs.command({
 yargs.command({
   command: 'pickup',
   describe: 'you will pickup the item and execute the items command',
-  builder:{
+  builder: {
     item: {
-      describe:'enum of items: [sword, bomb, banana, key_blue, key_red, key_green, med_kit]',
+      describe: 'enum of items: [sword, bomb, banana, key_blue, key_red, key_green, med_kit]',
       demandOption: true,
       type: 'string'
     }
